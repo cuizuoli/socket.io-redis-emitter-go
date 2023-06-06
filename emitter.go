@@ -34,7 +34,7 @@ type EmitterOptions struct {
 	Redis  RedisOptions
 	Key    string
 	Nsp    string
-	parser Parser
+	Parser Parser
 }
 
 type Emitter struct {
@@ -56,14 +56,14 @@ func NewEmitter(opts EmitterOptions) *Emitter {
 	if opts.Nsp == "" {
 		opts.Nsp = defaultNsp
 	}
-	if opts.parser == nil {
-		opts.parser = &MsgpackParser{}
+	if opts.Parser == nil {
+		opts.Parser = &MsgpackParser{}
 	}
 	broadcastOptions := BroadcastOptions{
 		nsp:              opts.Nsp,
 		broadcastChannel: fmt.Sprintf("%s#%s#", opts.Key, opts.Nsp),
 		requestChannel:   fmt.Sprintf("%s-request#%s#", opts.Key, opts.Nsp),
-		parser:           opts.parser,
+		parser:           opts.Parser,
 	}
 	return &Emitter{
 		opts:             opts,
