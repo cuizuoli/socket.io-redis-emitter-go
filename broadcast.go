@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"github.com/cuizuoli/socket.io-redis-emitter-go/enum"
 	"github.com/go-redis/redis/v8"
-	"github.com/vmihailenco/msgpack/v5"
 )
 
 type BroadcastOptions struct {
 	nsp              string
 	broadcastChannel string
 	requestChannel   string
+	parser           Parser
 }
 
 type BroadcastFlags struct {
@@ -138,7 +138,7 @@ func (b *BroadcastOperator) Emit(event string, args ...interface{}) (bool, error
 		"except": mapToArray(b.exceptRooms),
 	}
 
-	msg, err := msgpack.Marshal([]interface{}{uid, packet, opts})
+	msg, err := b.opts.parser.Marshal([]interface{}{uid, packet, opts})
 	if err != nil {
 		return false, err
 	}

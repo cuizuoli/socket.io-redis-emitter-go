@@ -3,6 +3,7 @@ package emitter
 import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"github.com/vmihailenco/msgpack/v5"
 	"strings"
 	"time"
 )
@@ -18,10 +19,22 @@ type RedisOptions struct {
 	PoolSize    int
 }
 
+type Parser interface {
+	Marshal(v interface{}) ([]byte, error)
+}
+
+type MsgpackParser struct {
+}
+
+func (p *MsgpackParser) Marshal(v interface{}) ([]byte, error) {
+	return msgpack.Marshal(v)
+}
+
 type EmitterOptions struct {
-	Redis RedisOptions
-	Key   string
-	Nsp   string
+	Redis  RedisOptions
+	Key    string
+	Nsp    string
+	parser Parser
 }
 
 type Emitter struct {
@@ -43,10 +56,14 @@ func NewEmitter(opts EmitterOptions) *Emitter {
 	if opts.Nsp == "" {
 		opts.Nsp = defaultNsp
 	}
+	if opts.parser == nil {
+		opts.parser = &MsgpackParser{}
+	}
 	broadcastOptions := BroadcastOptions{
 		nsp:              opts.Nsp,
 		broadcastChannel: fmt.Sprintf("%s#%s#", opts.Key, opts.Nsp),
 		requestChannel:   fmt.Sprintf("%s-request#%s#", opts.Key, opts.Nsp),
+		parser:           opts.parser,
 	}
 	return &Emitter{
 		opts:             opts,
